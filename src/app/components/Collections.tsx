@@ -1,9 +1,18 @@
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { type PromptCard } from "./data";
-import { usePrompts } from "./usePrompts";
+import { useSupabasePrompts } from "./useSupabasePrompts";
 
 export function Collections({ onOpen }: { onOpen: (c: PromptCard) => void }) {
-  const { prompts } = usePrompts();
+  const { cards: prompts, loading } = useSupabasePrompts();
+
+  if (loading) {
+    return (
+      <div style={{ padding: "64px 40px", textAlign: "center", color: "#9896B0", fontFamily: "Outfit" }}>
+        Loading collections...
+      </div>
+    );
+  }
+
   const groups = Array.from(new Set(prompts.map((c) => c.category))).map((cat) => ({
     cat,
     items: prompts.filter((c) => c.category === cat),
