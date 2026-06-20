@@ -19,6 +19,7 @@ function AppInner() {
   const [sort, setSort] = useState("Trending");
   const [active, setActive] = useState<PromptCard | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const { cards: prompts, loading } = useSupabasePrompts();
 
   const filtered = useMemo(() => {
@@ -67,6 +68,16 @@ function AppInner() {
     </div>
   );
 
+  function handleLogoClick() {
+    if (navigating) return; // prevent double-clicks
+    setNavigating(true);
+    setCategory("All");
+    setTimeout(() => {
+      setView("Explore");
+      setNavigating(false);
+    }, 1300);
+  }
+
   return (
     <div
       style={{
@@ -74,9 +85,22 @@ function AppInner() {
         background: "#0B0B10",
         color: "#EDECF5",
         position: "relative",
-        overflowX: "hidden",
+        // ⚠️ overflowX intentionally NOT set here — even pairing overflowX:"hidden"
+        // with overflowY:"visible" makes the browser silently force overflowY to "auto"
+        // (per CSS spec), which breaks position:sticky on the Navbar below.
       }}
     >
+      <style>{`
+        @keyframes pulseLogo {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.15); opacity: 0.75; }
+        }
+        @keyframes fadeInOverlay {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+
       <div
         aria-hidden
         style={{
@@ -94,7 +118,7 @@ function AppInner() {
       />
 
       <div style={{ position: "relative", zIndex: 1 }}>
-        <Navbar view={view} onView={setView} onLogin={() => setAuthOpen(true)} />
+        <Navbar view={view} onView={setView} onLogin={() => setAuthOpen(true)} onLogoClick={handleLogoClick} />
 
         {view === "Explore" && (
           <>
@@ -162,6 +186,56 @@ function AppInner() {
 
       <PromptDrawer card={active} onClose={() => setActive(null)} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+
+      {navigating && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(11,11,16,0.92)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            animation: "fadeInOverlay 200ms ease",
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #B794F4, #6D5BBE)",
+              boxShadow: "0 0 24px rgba(183,148,244,0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#0B0B10",
+              fontWeight: 700,
+              fontSize: 22,
+              fontFamily: "Abhaya Libre, serif",
+              animation: "pulseLogo 1s ease-in-out infinite",
+            }}
+          >
+            V
+          </div>
+          <div
+            style={{
+              fontFamily: "Outfit",
+              fontWeight: 400,
+              fontSize: 13,
+              letterSpacing: "0.05em",
+              color: "#9896B0",
+            }}
+          >
+            Loading Visulora...
+          </div>
+        </div>
+      )}
     </div>
   );
 }

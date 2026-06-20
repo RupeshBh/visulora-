@@ -9,10 +9,12 @@ export function Navbar({
   view,
   onView,
   onLogin,
+  onLogoClick,
 }: {
   view: NavView;
   onView: (v: NavView) => void;
   onLogin: () => void;
+  onLogoClick?: () => void;
 }) {
   const { user, signOut } = useAuth();
   const { syncing, lastSync, error } = usePrompts();
@@ -38,6 +40,7 @@ export function Navbar({
     >
       <div className="h-full flex items-center justify-between" style={{ padding: "0 40px" }}>
         <div
+          onClick={() => (onLogoClick ? onLogoClick() : onView("Explore"))}
           className="flex items-center"
           style={{
             gap: 10,
@@ -45,6 +48,7 @@ export function Navbar({
             borderRadius: 999,
             background: "rgba(183,148,244,0.06)",
             border: "1px solid rgba(183,148,244,0.18)",
+            cursor: "pointer",
           }}
         >
           <span
